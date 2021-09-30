@@ -1,0 +1,14 @@
+- name: Copy to remote
+  become: true
+  copy:
+    src: /root/project/backend
+    dest: /home/ubuntu
+
+- name: Starting backend service
+  become: true
+  shell: |
+    cd /home/ubuntu/backend
+    npm install
+    npm run build
+    cd dist
+    pm2 start main.js -f
