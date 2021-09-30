@@ -233,6 +233,7 @@ jobs:
             - backend-build
       - run:
           name: Run migrations
+          no_output_timeout: 20m
           command: |
             cd backend
             npm run migrations > migration_log.txt
