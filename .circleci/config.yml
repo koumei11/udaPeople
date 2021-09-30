@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -144,10 +147,11 @@ jobs:
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
-      - image: amazon/aws-cli
+      - image: cimg/base:2021.07
     steps:
       # Checkout code from git
       - checkout
+      - aws-cli/setup
       - run:
           name: Ensure back-end infrastructure exists
           command: |
