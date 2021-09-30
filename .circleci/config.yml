@@ -24,6 +24,7 @@ commands:
       - run:
           name: Revert migrations
           # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS = $(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
@@ -252,7 +253,8 @@ jobs:
             fi
             
      # Here's where you will add some code to rollback on failure
-      - revert-migrations 
+      - revert-migrations
+      - destroy-environment
 
   deploy-frontend:
     docker:
