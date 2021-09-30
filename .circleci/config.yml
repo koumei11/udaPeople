@@ -3,15 +3,17 @@ version: 2.1
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here  
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
             # Your code here
-            exit 1
+            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force  
+            aws cloudformation delete-stack \
+                --stack-name "${CIRCLE_WORKFLOW_ID:0:7}-udapeople-backend"
+            aws cloudformation delete-stack \
+                --stack-name "${CIRCLE_WORKFLOW_ID:0:7}-udapeople-frontend"
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -149,29 +151,41 @@ jobs:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
-              --template-file backend.yml \
-              --tags project=udapeople-backend \
-              --stack-name "${CIRCLE_WORKFLOW_ID}-udapeople-backend" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+              --template-file .circleci/files/backend.yml \
+              --tags Name=udapeople \
+              --stack-name "${CIRCLE_WORKFLOW_ID:0:7}-udapeople-backend" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+            URLS=$(aws ec2 describe-instances \
+              --region ap-northeast-1 \
+              --query 'Reservations[*].Instances[*].PublicIpAddress'
+              --filters "Name=tag:Name,Values=${CIRCLE_WORKFLOW_ID:0:7}-udapeople-backend"
+              --output text)
+            echo "URLS=$URLS"
+            echo "${CIRCLE_WORKFLOW_ID}"
+            curl -H "Content-Type: text/plain" \
+                 -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
+                 --request PUT \
+                 --data "$URL" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7}
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople-frontend \
-              --stack-name "${CIRCLE_WORKFLOW_ID}-udapeople-frontend" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+              --tags Name=udapeople \
+              --stack-name "${CIRCLE_WORKFLOW_ID:0:7}-udapeople-frontend" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Project,Values=udapeople-backend" \
-              --output text >> inventory.txt
+              --filters "Name=tag:Name,Values=udapeople-backend" \
+              --output text >> .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - inventory.txt
+            - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure 
       - destroy-environment
 
