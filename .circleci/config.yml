@@ -243,7 +243,8 @@ jobs:
             npm run migrations:revert
             npm run migrations > migration_log.txt
             cat migration_log.txt
-            export migration_executed=$(cat migration_log.txt | grep -c "has been executed successfully")
+            echo $(cat migration_log.txt | grep -c "successfully")
+            export migration_executed=$(cat migration_log.txt | grep -c "successfully")
       - run:
           name: Send migration results to memstash
           command: |
