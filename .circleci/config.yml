@@ -27,9 +27,9 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            export SUCCESS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
+            export SUCCESS=$(curl -H "token: 9c67726a-dd0d-4ee9-a673-9d2bb902c92e" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
             echo $SUCCESS
-            if(( $SUCCESS==1 )); 
+            if [ $SUCCESS==1 ]
             then
               cd ~/project/backend
               npm install
@@ -244,13 +244,17 @@ jobs:
           name: Send migration results to memstash
           command: |
             # Your code here
+            echo $migration_executed
             if [ $migration_executed > 0 ]
             then
+              echo "migration executed"
               curl -H "Content-Type: text/plain" \
                    -H "token: 9c67726a-dd0d-4ee9-a673-9d2bb902c92e" \
                    --request PUT \
                    --data "1" \
-                   https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+                   https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            else
+              return 1
             fi
             
      # Here's where you will add some code to rollback on failure
