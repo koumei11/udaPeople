@@ -294,7 +294,6 @@ jobs:
             echo $BACKEND_IP
             echo ${CIRCLE_WORKFLOW_ID}
             export API_URL="http://${BACKEND_IP}:3030"
-            echo ${API_URL}
             echo API_URL="${API_URL}" >> frontend/.env
       - run:
           name: Deploy frontend objects
@@ -375,18 +374,18 @@ jobs:
             pip install awscli
             apk add --update curl nodejs npm
       - run:
-          name: Get backend url
+          name: Backend smoke test.
           command: |
             # your code here
             echo ${CIRCLE_WORKFLOW_ID}
-            BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
-                 --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+            BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-      - run:
-          name: Backend smoke test.
-          command: |
             curl "${API_URL}/api/status"
+            
       - run:
           name: Frontend smoke test.
           command: |
