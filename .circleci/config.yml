@@ -216,21 +216,6 @@ jobs:
           command: |
             apk add --update ansible
       - run:
-          name: Set environment variables
-          command: |
-            echo ENVIRONMENT=development > backend/.env
-            echo NODE_ENV=production >> backend/.env
-            echo NODE_ENV=production >> frontend/.env
-            echo TYPEORM_CONNECTION=postgres >> backend/.env
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> backend/.env
-            echo TYPEORM_HOST=$TYPEORM_HOST >> backend/.env
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> backend/.env
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> backend/.env
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> backend/.env
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> backend/.env
-            echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
-      - run:
           name: Configure server
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
@@ -310,12 +295,14 @@ jobs:
             echo $BACKEND_IP
             echo ${CIRCLE_WORKFLOW_ID}
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}" >> frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
             # your code here
             pwd
+            echo "${API_URL}" >> frontend/.env
+            echo NODE_ENV=production >> frontend/.env
+            echo ENVIRONMENT=production >> frontend/.env
             cd frontend
             npm audit fix
             npm run build
@@ -349,6 +336,20 @@ jobs:
             # your code here
             apk add --update ansible openssh-client tar gzip curl
             pip install awscli
+      - run:
+          name: Set environment variables
+          command: |
+            echo ENVIRONMENT=development > backend/.env
+            echo NODE_ENV=production >> backend/.env
+            echo TYPEORM_CONNECTION=postgres >> backend/.env
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> backend/.env
+            echo TYPEORM_HOST=$TYPEORM_HOST >> backend/.env
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> backend/.env
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> backend/.env
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> backend/.env
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> backend/.env
+            echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
       - run:
           name: Deploy backend
           command: |
