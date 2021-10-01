@@ -16,7 +16,7 @@ commands:
                 --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack \
                 --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force 
+            aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.  
@@ -259,7 +259,7 @@ jobs:
   deploy-frontend:
     docker:
       # Docker image here that supports AWS CLI
-      - image: cimg/base:2021.07
+      - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
       - checkout
@@ -287,7 +287,7 @@ jobs:
             pwd
             npm run build
             cd dist
-            aws s3 sync . s3://udapeople-${CIRCLE_WORKFLOW_ID:0:4} --delete
+            aws s3 sync . s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --delete
       # Here's where you will add some code to rollback on failure
       - revert-migrations
       - destroy-environment   
@@ -405,7 +405,7 @@ workflows:
       - deploy-frontend:
           requires: [run-migrations]
       - deploy-backend:
-          requires: [run-migrations]
+          requires: [deploy-frontend]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
