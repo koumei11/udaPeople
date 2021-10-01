@@ -1,23 +1,15 @@
-- name: "install dependencies."
-  become: yes
-  apt:
-    name: ["nodejs", "npm"]
-    state: latest
-    update_cache: yes
-
-- name: "install pm2"
-  become: yes
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
-
 - name: Copy to remote
   become: true
   copy:
     src: /root/project/backend
     dest: /home/ubuntu
+
+- name: Install Node modules
+  become: true
+  shell: |
+      cd /home/ubuntu/backend
+      ls
+      npm install
 
 - name: Starting backend service
   become: true
@@ -25,5 +17,6 @@
     cd /home/ubuntu/backend
     npm install
     npm run build
+    npm run migrations
     cd dist
     pm2 start main.js -f

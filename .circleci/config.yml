@@ -28,10 +28,10 @@ commands:
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl -H "token: 9c67726a-dd0d-4ee9-a673-9d2bb902c92e" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            echo "Migration Revert"
             echo $SUCCESS
-            if $SUCCESS==1
+            if [ $SUCCESS==1 ]
             then
+              echo "Migration Revert"
               cd ~/project/backend
               npm install
               #  Add revert code here. You can find this in the Getting Started section.
@@ -247,6 +247,7 @@ jobs:
           name: Send migration results to memstash
           command: |
             # Your code here
+            cd backend
             if [ $(cat migration_log.txt | grep -c "successfully") > 0 ]
             then
               echo "migration executed"
@@ -445,6 +446,7 @@ jobs:
               # your code here
               export OldWorkflowID=$(curl -H "token: 6d0413bb-4720-47f5-a60f-6374b0870d3b" \
                                           --request GET https://api.memstash.io/values/workflow_id)
+              echo $OldWorkflowID
               export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
                       --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
         - run:
@@ -454,9 +456,10 @@ jobs:
               echo $STACKS
               if [ "${OldWorkflowID}" != "" ]
               then
-                aws s3 rm "s3://${OldBucketID}" --recursive
-              fi
-              
+                aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              fi        
 
 workflows:
   default:
@@ -473,6 +476,9 @@ workflows:
           requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [main]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
