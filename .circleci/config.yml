@@ -172,7 +172,7 @@ jobs:
             curl -H "Content-Type: text/plain" \
                  -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
                  --request PUT \
-                 --data "$URLS" https://api.memstash.io/values/url
+                 --data "$URLS" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7}
 
       - run:
           name: Ensure front-end infrastructure exist
@@ -278,8 +278,9 @@ jobs:
           command: |
             # your code here
             BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
-                 --request GET https://api.memstash.io/values/url)
+                 --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
             echo $BACKEND_IP
+            echo ${CIRCLE_WORKFLOW_ID:0:7}
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
@@ -347,8 +348,9 @@ jobs:
           name: Get backend url
           command: |
             # your code here
+            echo ${CIRCLE_WORKFLOW_ID:0:7}
             BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
-                 --request GET https://api.memstash.io/values/url)
+                 --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
