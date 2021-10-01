@@ -27,9 +27,10 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            export SUCCESS=$(curl -H "token: 9c67726a-dd0d-4ee9-a673-9d2bb902c92e" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            SUCCESS=$(curl -H "token: 9c67726a-dd0d-4ee9-a673-9d2bb902c92e" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            echo "Migration Revert"
             echo $SUCCESS
-            if [ $SUCCESS==1 ]
+            if $SUCCESS==1
             then
               cd ~/project/backend
               npm install
@@ -233,6 +234,7 @@ jobs:
       - restore_cache:
           keys:
             - backend-build
+      - aws-cli/setup
       - run:
           name: Run migrations
           no_output_timeout: 20m
@@ -240,6 +242,7 @@ jobs:
             echo ${CIRCLE_WORKFLOW_ID}
             cd backend
             npm run migrations > migration_log.txt
+            cat migration_log.txt
             export migration_executed=$(cat migration_log.txt | grep -c "has been executed successfully")
       - run:
           name: Send migration results to memstash
@@ -255,7 +258,12 @@ jobs:
                    --data "1" \
                    https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
             else
-              return 1
+              echo "migration not executed"
+              curl -H "Content-Type: text/plain" \
+                   -H "token: 9c67726a-dd0d-4ee9-a673-9d2bb902c92e" \
+                   --request PUT \
+                   --data "0" \
+                   https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
             fi
             
      # Here's where you will add some code to rollback on failure
@@ -389,13 +397,24 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: Install dependencies
+          name: Cache old workflow id
           command: |
             # your code here
+            export OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)
+            curl -H "Content-Type: text/plain" \
+                 -H "token: 6d0413bb-4720-47f5-a60f-6374b0870d3b" \
+                 --request PUT \
+                 --data "$OldWorkflowID" https://api.memstash.io/values/workflow_id
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name udapeople \
+              --region ap-northeast-1 \
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID}
       # Here's where you will add some code to rollback on failure
       - revert-migrations
       - destroy-environment 
