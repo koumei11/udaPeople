@@ -243,14 +243,11 @@ jobs:
             npm run migrations:revert
             npm run migrations > migration_log.txt
             cat migration_log.txt
-            echo $(cat migration_log.txt | grep -c "successfully")
-            export migration_executed=$(cat migration_log.txt | grep -c "successfully")
       - run:
           name: Send migration results to memstash
           command: |
             # Your code here
-            echo $migration_executed
-            if [ $migration_executed > 0 ]
+            if [ $(cat migration_log.txt | grep -c "successfully") > 0 ]
             then
               echo "migration executed"
               curl -H "Content-Type: text/plain" \
@@ -453,6 +450,8 @@ jobs:
         - run:
             name: Remove old stacks and files
             command: |
+              echo $OldWorkflowID
+              echo $STACKS
               if [ "${OldWorkflowID}" != "" ]
               then
                 aws s3 rm "s3://${OldBucketID}" --recursive
