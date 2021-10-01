@@ -300,7 +300,7 @@ jobs:
           command: |
             # your code here
             pwd
-            echo "${API_URL}" >> frontend/.env
+            echo API_URL="${API_URL}" >> frontend/.env
             echo NODE_ENV=production >> frontend/.env
             echo ENVIRONMENT=production >> frontend/.env
             cd frontend
