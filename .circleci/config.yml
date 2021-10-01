@@ -299,6 +299,8 @@ jobs:
           command: |
             # your code here
             pwd
+            echo ${API_URL}
+            return 1
             echo API_URL="${API_URL}" >> frontend/.env
             echo NODE_ENV=production >> frontend/.env
             echo ENVIRONMENT=production >> frontend/.env
@@ -373,7 +375,7 @@ jobs:
           command: |
             # your code here
             pip install awscli
-            apk add --update curl
+            apk add --update curl nodejs npm
       - run:
           name: Get backend url
           command: |
