@@ -333,7 +333,7 @@ jobs:
           name: Install dependencies
           command: |
             # your code here
-            apk add --update ansible openssh-client tar gzip curl
+            apk add --update ansible openssh-client tar gzip curl nodejs npm
             pip install awscli
       - run:
           name: Set environment variables
@@ -351,6 +351,7 @@ jobs:
             echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
       - run:
           name: Deploy backend
+          no_output_timeout: 30m
           command: |
             # your code here
             export ANSIBLE_HOST_KEY_CHECKING=False
