@@ -16,7 +16,7 @@ commands:
                 --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack \
                 --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            aws s3 rb --force s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.  
@@ -400,8 +400,8 @@ jobs:
               return 1
             fi
       # Here's where you will add some code to rollback on failure  
-      - revert-migrations
-      - destroy-environment
+      # - revert-migrations
+      # - destroy-environment
 
   cloudfront-update:
     docker:
