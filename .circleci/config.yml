@@ -368,11 +368,11 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
-      - aws-cli/setup
       - run:
           name: Install dependencies
           command: |
             # your code here
+            pip install awscli
             apk add --update curl
       - run:
           name: Get backend url
@@ -396,7 +396,7 @@ jobs:
             
             if curl -s $URL | grep "Welcome"
             then
-              return 0
+              return 1
             else
               return 1
             fi
