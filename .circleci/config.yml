@@ -280,7 +280,7 @@ jobs:
             BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
                  --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
             echo $BACKEND_IP
-            echo ${CIRCLE_WORKFLOW_ID:0:7}
+            echo ${CIRCLE_WORKFLOW_ID}
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
@@ -289,6 +289,7 @@ jobs:
             # your code here
             pwd
             cd frontend
+            npm audit fix
             npm run build
             cd dist
             echo "udapeople-${CIRCLE_WORKFLOW_ID:0:7}""
@@ -318,7 +319,7 @@ jobs:
           name: Install dependencies
           command: |
             # your code here
-            apk add --update ansible openssh-client tar gzip
+            apk add --update ansible openssh-client tar gzip curl
             pip install awscli
       - run:
           name: Deploy backend
@@ -348,7 +349,7 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            echo ${CIRCLE_WORKFLOW_ID:0:7}
+            echo ${CIRCLE_WORKFLOW_ID}
             BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
                  --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
             export API_URL="http://${BACKEND_IP}:3030"
