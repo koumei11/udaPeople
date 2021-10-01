@@ -171,7 +171,7 @@ jobs:
             curl -H "Content-Type: text/plain" \
                  -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
                  --request PUT \
-                 --data "$URL" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7}
+                 --data "$URL" https://api.memstash.io/values/url
 
       - run:
           name: Ensure front-end infrastructure exist
@@ -277,7 +277,7 @@ jobs:
           command: |
             # your code here
             BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
-                 --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+                 --request GET https://api.memstash.io/values/url)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
@@ -320,6 +320,7 @@ jobs:
           name: Deploy backend
           command: |
             # your code here
+            export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i .circleci/ansible/inventory.txt \
                                 .circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure
@@ -344,7 +345,7 @@ jobs:
           command: |
             # your code here
             BACKEND_IP=$(curl -H "token: 4f0c8d43-2483-48f5-82ed-89300a61fb14" \
-                 --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+                 --request GET https://api.memstash.io/values/url)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
@@ -365,20 +366,25 @@ jobs:
       - revert-migrations
       - destroy-environment
 
-  # cloudfront-update:
-  #   docker:
-  #     # Docker image here that supports AWS CLI
-  #   steps:
-  #     # Checkout code from git
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # your code here
-  #     - run:
-  #         name: Update cloudfront distribution
-  #         command: |
-  #           # your code here
-  #     # Here's where you will add some code to rollback on failure  
+  cloudfront-update:
+    docker:
+      # Docker image here that supports AWS CLI
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      - aws-cli/setup
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure
+      - revert-migrations
+      - destroy-environment 
 
   # cleanup:
   #     docker:
