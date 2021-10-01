@@ -237,6 +237,7 @@ jobs:
           name: Run migrations
           no_output_timeout: 20m
           command: |
+            echo ${CIRCLE_WORKFLOW_ID}
             cd backend
             npm run migrations > migration_log.txt
             export migration_executed=$(cat migration_log.txt | grep -c "has been executed successfully")
