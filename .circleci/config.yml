@@ -836,16 +836,15 @@ jobs:
             else
               return 1
             fi
-      - destroy-environment
-      - revert-migrations
-  
             
       #backend smoke test is failing
       - run:
           name: Backend smoke test.
           command: |
-            PUBLIC_IP=$(curl -H  "token: baca3071-c660-4431-b697-6f9bc4624dd7" --request GET \
-            https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
+            PUBLIC_IP=$(BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
             if curl -s "http://${PUBLIC_IP}:3030/api/status" | grep "ok"
             then
               echo "http://${PUBLIC_IP}:3030/api/status"
@@ -854,8 +853,8 @@ jobs:
               echo "http://${PUBLIC_IP}:3030/api/status"
               return 1
             fi
-      #- destroy-environment
-      #- revert-migrations
+      # - destroy-environment
+      # - revert-migrations
       
   cloudfront-update:
     docker:
