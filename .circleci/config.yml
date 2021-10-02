@@ -179,12 +179,12 @@ jobs:
           name: Ensure front-end infrastructure exist
           command: |
             
-            echo TYPEORM_HOST
-            echo TYPEORM_USERNAME
-            echo TYPEORM_PASSWORD
-            echo TYPEORM_DATABASE
-            echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
-            
+            echo $TYPEORM_HOST
+            echo $TYPEORM_USERNAME
+            echo $TYPEORM_PASSWORD
+            echo $TYPEORM_DATABASE
+            echo $TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
+
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags Name=frontend-${CIRCLE_WORKFLOW_ID:0:7} \
