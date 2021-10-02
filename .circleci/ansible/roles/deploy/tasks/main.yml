@@ -11,12 +11,14 @@
       ls
       npm install
 
-- name: Starting backend service
+- name: Buld
   become: true
   shell: |
     cd /home/ubuntu/backend
     npm install
     npm run build
-    npm run migrations
-    cd dist
-    pm2 start main.js -f
+
+- name: Start Backend Server
+  shell: |
+    cd /home/ubuntu/backend
+    pm2 start npm --name backend -- start
