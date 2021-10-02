@@ -156,6 +156,23 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
+          name: Set environment variables
+          command: |
+
+            echo ENVIRONMENT=development > backend/.env
+            echo NODE_ENV=production >> backend/.env
+            echo TYPEORM_CONNECTION=postgres >> backend/.env
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> backend/.env
+            echo TYPEORM_HOST=$TYPEORM_HOST >> backend/.env
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> backend/.env
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> backend/.env
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> backend/.env
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> backend/.env
+            echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
+
+            cat backend/.env
+      - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
@@ -178,12 +195,6 @@ jobs:
       - run:
           name: Ensure front-end infrastructure exist
           command: |
-            
-            echo $TYPEORM_HOST
-            echo $TYPEORM_USERNAME
-            echo $TYPEORM_PASSWORD
-            echo $TYPEORM_DATABASE
-            echo $TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
 
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
@@ -243,23 +254,6 @@ jobs:
           keys:
             - backend-build
       - aws-cli/setup
-      - run:
-          name: Set environment variables
-          command: |
-
-            echo ENVIRONMENT=development > backend/.env
-            echo NODE_ENV=production >> backend/.env
-            echo TYPEORM_CONNECTION=postgres >> backend/.env
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> backend/.env
-            echo TYPEORM_HOST=$TYPEORM_HOST >> backend/.env
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> backend/.env
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> backend/.env
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> backend/.env
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> backend/.env
-            echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
-
-            cat backend/.env
       - run:
           name: Run migrations
           no_output_timeout: 20m
