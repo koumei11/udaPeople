@@ -212,7 +212,6 @@ jobs:
       # Checkout code from git
       - checkout
       # Add ssh keys with fingerprint
-      - aws-cli/setup
       - add_ssh_keys:
           fingerprints:
             - "06:6b:68:2e:c4:e9:c1:fb:f0:bf:94:92:50:44:79:54"
@@ -223,6 +222,7 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
+            pip install awscli
       - run:
           name: Configure server
           command: |
