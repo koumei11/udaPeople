@@ -259,7 +259,7 @@ jobs:
             echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> backend/.env
             echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
 
-            echo backend/.env
+            cat backend/.env
       - run:
           name: Run migrations
           no_output_timeout: 20m
