@@ -846,8 +846,6 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
               --output text)
             curl -s "http://${PUBLIC_IP}:3030/api/status" | grep "ok"
-            
-            fi
       - destroy-environment
       - revert-migrations
       
