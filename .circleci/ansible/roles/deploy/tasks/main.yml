@@ -11,7 +11,7 @@
       ls
       npm install
 
-- name: Buld
+- name: Build
   become: true
   shell: |
     cd /home/ubuntu/backend
