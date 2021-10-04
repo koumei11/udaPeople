@@ -637,6 +637,7 @@ jobs:
           name: backend scan
           command: |
             cd backend
+            npm update
             npm audit fix --audit-level=critical
             
   deploy-infrastructure:
