@@ -611,6 +611,8 @@ jobs:
           name: backend test
           command: |
             cd backend
+            npm update
+            npm i
             npm run test
   
   scan-frontend:
