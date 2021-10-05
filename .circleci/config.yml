@@ -849,8 +849,8 @@ jobs:
               --output text)
             echo "http://${PUBLIC_IP}:3030/api/status"
             curl -s "http://${PUBLIC_IP}:3030/api/status"
-      - destroy-environment
-      - revert-migrations
+      # - destroy-environment
+      # - revert-migrations
       
   cloudfront-update:
     docker:
