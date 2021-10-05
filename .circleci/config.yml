@@ -847,7 +847,8 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
               --output text)
-            curl -s "http://${PUBLIC_IP}:3030/api/status" | grep "ok"
+            echo "http://${PUBLIC_IP}:3030/api/status"
+            curl -s "http://${PUBLIC_IP}:3030/api/status"
       - destroy-environment
       - revert-migrations
       
