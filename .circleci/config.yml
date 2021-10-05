@@ -529,7 +529,6 @@ commands:
             aws cloudformation delete-stack --stack-name frontend-${CIRCLE_WORKFLOW_ID}
             # Delete back end stack
             aws cloudformation delete-stack --stack-name backend-${CIRCLE_WORKFLOW_ID}
-
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
@@ -549,8 +548,6 @@ commands:
               sudo npm run migrations:revert
               exit 1
             fi
-
-
 jobs:
   build-frontend:
     docker:
@@ -625,12 +622,13 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force
-
   scan-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build1]
       - run: 
           name: backend scan
           command: |
@@ -652,7 +650,7 @@ jobs:
               --tags project=udapeople \
               --stack-name "backend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" 
-            URLS=$(aws ec2 describe-instances --region us-east-2 --query "Reservations[*].Instances[*].PublicIpAddress" \
+            URLS=$(aws ec2 describe-instances --region ap-northeast-1 --query "Reservations[*].Instances[*].PublicIpAddress" \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" --output text)
             echo "URLS=$URLS"
             echo "${CIRCLE_WORKFLOW_ID}"
@@ -833,8 +831,8 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website.us-east-2.amazonaws.com/#/index.html"
-            if curl -s "http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website.us-east-2.amazonaws.com/#/index.html" | grep -o "Welcome"
+            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website.ap-northeast-1.amazonaws.com"
+            if curl -s "http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website.ap-northeast-1.amazonaws.com" | grep -o "Welcome"
             then
               return 0
             else
@@ -845,18 +843,13 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            PUBLIC_IP=$(curl -H  "token: baca3071-c660-4431-b697-6f9bc4624dd7" --request GET \
-            https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
-            if curl -s "http://${PUBLIC_IP}:3030/api/status" | grep "ok"
-            then
-              echo "http://${PUBLIC_IP}:3030/api/status"
-              return 0
-            else
-              echo "http://${PUBLIC_IP}:3030/api/status"
-              return 1
-            fi
-      #- destroy-environment
-      #- revert-migrations
+            PUBLIC_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+              --output text)
+            curl -s "http://${PUBLIC_IP}:3030/api/status" | grep "ok"
+      - destroy-environment
+      - revert-migrations
       
   cloudfront-update:
     docker:
@@ -877,13 +870,11 @@ jobs:
             
             curl -H "Content-Type: text/plain" -H "token: 87112b30-3ba8-479d-950f-237a49cebbcd" --request PUT \
               --data "$OldWorkflowID" https://api.memstash.io/values/id_${CIRCLE_WORKFLOW_ID}
-
             export STACKS=$(aws cloudformation list-stacks \
             --query "StackSummaries[*].StackName" \
             --stack-status-filter CREATE_COMPLETE \
             --no-paginate --output text)
             echo STACKS: "$STACKS"
-
             echo "Update cloudfront stack"
             aws cloudformation deploy \
               --stack-name udapeople \
@@ -891,9 +882,8 @@ jobs:
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}" \
               --tags project=udapeople-cloudfront
-
-      #- destroy-environment
-      #- revert-migrations
+      - destroy-environment
+      - revert-migrations
       
   cleanup:
     docker:
@@ -913,7 +903,6 @@ jobs:
             --query "StackSummaries[*].StackName" \
             --stack-status-filter CREATE_COMPLETE \
             --no-paginate --output text)
-
             echo OldWorkflowID: ${OldWorkflowID}
             echo STACKS: "$STACKS"
             
@@ -922,7 +911,6 @@ jobs:
               # Delete files from bucket
               echo "s3://udapeople-${OldWorkflowID}"
               aws s3 rm s3://udapeople-${OldWorkflowID}/ --recursive
-
               # Delete front end stack
               aws cloudformation delete-stack --stack-name frontend-${OldWorkflowID}
               # Delete back end stack
@@ -946,39 +934,39 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - run-migrations:
           requires: [configure-infrastructure]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - deploy-frontend:
           requires: [run-migrations]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - deploy-backend:
           requires: [run-migrations]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - cloudfront-update:
           requires: [smoke-test]
           filters:
             branches:
-              only: [master]
+              only: [main]
       - cleanup:
           requires: [cloudfront-update]
           filters:
             branches:
-              only: [master]
+              only: [main]
