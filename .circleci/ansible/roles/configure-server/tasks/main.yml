@@ -1,42 +1,19 @@
-# ---
-# - name: "update apt packages"
-#   become: true
-#   become_method: sudo
-#   apt: 
-#     update_cache: yes
-
-# - name: "upgrade packages"
-#   become: true
-#   apt:
-#     upgrade: "yes"
-
-# - name: Remove dependencies that are no longer required.
-#   become: yes
-#   apt:
-#     autoremove: "yes"
-
-# - name: "install dependencies."
-#   become: yes
-#   apt:
-#     name: ["nodejs", "npm"]
-#     state: latest
-#     update_cache: yes
-
-# - name: "install pm2"
-#   become: yes
-#   npm:
-#     name: pm2
-#     global: yes
-#     production: yes
-#     state: present
-
 ---
-
-- name: "update apt packages."
-  become: yes
-  apt:
+- name: "update apt packages"
+  become: true
+  become_method: sudo
+  apt: 
     update_cache: yes
 
+- name: "upgrade packages"
+  become: true
+  apt:
+    upgrade: "yes"
+
+- name: Remove dependencies that are no longer required.
+  become: yes
+  apt:
+    autoremove: "yes"
 
 - name: "install dependencies."
   become: yes
@@ -52,16 +29,39 @@
     global: yes
     production: yes
     state: present
+
+# ---
+
+# - name: "update apt packages."
+#   become: yes
+#   apt:
+#     update_cache: yes
+
+
+# - name: "install dependencies."
+#   become: yes
+#   apt:
+#     name: ["nodejs", "npm"]
+#     state: latest
+#     update_cache: yes
+
+# - name: "install pm2"
+#   become: yes
+#   npm:
+#     name: pm2
+#     global: yes
+#     production: yes
+#     state: present
     
-  environment:
-    ENVIRONMENT: production
-    NODE_ENV: production
-    TYPEORM_CONNECTION: "{{ lookup('env','TYPEORM_CONNECTION') }}"
-    TYPEORM_HOST: "{{ lookup('env','TYPEORM_HOST') }}"
-    TYPEORM_PORT: 5432
-    TYPEORM_USERNAME: "{{ lookup('env','TYPEORM_USERNAME') }}"
-    TYPEORM_PASSWORD: "{{ lookup('env','TYPEORM_PASSWORD') }}"
-    TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
-    TYPEORM_MIGRATIONS_DIR: ./src/migrations
-    TYPEORM_MIGRATIONS: ./src/migrations/*.ts
-    TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
+#   environment:
+#     ENVIRONMENT: production
+#     NODE_ENV: production
+#     TYPEORM_CONNECTION: "{{ lookup('env','TYPEORM_CONNECTION') }}"
+#     TYPEORM_HOST: "{{ lookup('env','TYPEORM_HOST') }}"
+#     TYPEORM_PORT: 5432
+#     TYPEORM_USERNAME: "{{ lookup('env','TYPEORM_USERNAME') }}"
+#     TYPEORM_PASSWORD: "{{ lookup('env','TYPEORM_PASSWORD') }}"
+#     TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
+#     TYPEORM_MIGRATIONS_DIR: ./src/migrations
+#     TYPEORM_MIGRATIONS: ./src/migrations/*.ts
+#     TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts

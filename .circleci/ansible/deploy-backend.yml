@@ -33,7 +33,7 @@
 
     - setup:
   roles:
-    # - configure-server
+    - configure-server
     - deploy
 # ---
 
