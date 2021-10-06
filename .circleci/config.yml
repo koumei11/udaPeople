@@ -459,11 +459,12 @@ jobs:
             name: Get old stack workflow id
             command: |
               # your code here
+              apk add --update curl 
               export OldWorkflowID=$(curl -H "token: 6d0413bb-4720-47f5-a60f-6374b0870d3b" \
                                           --request GET https://api.memstash.io/values/workflow_id)
               echo $OldWorkflowID
-              export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-                      --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+              export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+                      --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
         - run:
             name: Remove old stacks and files
             command: |
@@ -471,6 +472,7 @@ jobs:
               echo $STACKS
               if [ "${OldWorkflowID}" != "" ]
               then
+                pip install awscli
                 aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
                 aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
                 aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
